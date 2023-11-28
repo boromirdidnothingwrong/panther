@@ -6,22 +6,14 @@ on:
   push:
     branches: [ "main" ]
   
-
 env:
-    IMAGE_NAME: panther
-    IMAGE_TAGS: v1 ${{ github.sha }}
-    IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-    REGISTRY_USER: ${{ github.actor }}
-    REGISTRY_PASSWORD: ${{ github.token }}
+    IMAGE_NAME: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app
+    IMAGE_TAGS: build-${{ github.run_number }}
 
 jobs:
   build:
     name: Build and push image
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        install_latest: [ true, false ]
 
     steps:
       # Checkout push-to-registry action github repository
@@ -29,24 +21,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ github.run_number }}
-
-      # Push the image to GHCR (Image Registry)
-      - name: Push To GHCR
-        uses: ./
-        id: push
-        with:
-          image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.IMAGE_TAGS }}
-          registry: ${{ env.IMAGE_REGISTRY }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-          extra-args: |
-            --disable-content-trust
-
-      - name: Echo outputs
         run: |
-          echo "${{ toJSON(steps.push.outputs) }}"
+          docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
+          docker push --all-tags ${{ env.IMAGE_NAME }}
 
   push_to_contensis:
     runs-on: ubuntu-latest
@@ -59,6 +36,6 @@ jobs:
           block-id: santa-is-coming-to-town
           client-id: ${{ secrets.Z_CLIENT_ID }}
           git-token: ${{ secrets.GIT_TOKEN }}
-          image-uri: ${{ env.IMAGE_NAME }}
+          image-uri: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
           project-id: testingJosh
           shared-secret: ${{ secrets.Z_SHARED_SECRET }}
