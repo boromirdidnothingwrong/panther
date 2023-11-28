@@ -9,6 +9,9 @@ on:
 env:
     IMAGE_NAME: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app
     IMAGE_TAGS: build-${{ github.run_number }}
+    IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+    REGISTRY_USER: ${{ github.actor }}
+    REGISTRY_PASSWORD: ${{ github.token }}
 
 jobs:
   build:
@@ -23,7 +26,23 @@ jobs:
       - name: Build the Docker image
         run: |
           docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
-          docker push --all-tags ${{ env.IMAGE_NAME }}
+          #docker push --all-tags ${{ env.IMAGE_NAME }}
+          
+   # Push the image to GHCR (Image Registry)
+      - name: Push To GHCR
+        uses: ./
+        id: push
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          extra-args: |
+            --disable-content-trust
+      - name: Echo outputs
+        run: |
+          echo "${{ toJSON(steps.push.outputs) }}"
 
   push_to_contensis:
     runs-on: ubuntu-latest
