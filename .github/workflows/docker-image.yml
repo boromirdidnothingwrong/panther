@@ -15,6 +15,7 @@ jobs:
     name: Build and push image
     runs-on: ubuntu-latest
     permissions: write-all
+    
     steps:
       # Checkout push-to-registry action github repository
       - name: Checkout Push to Registry action
