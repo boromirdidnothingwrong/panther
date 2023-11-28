@@ -23,26 +23,17 @@ jobs:
       - name: Checkout Push to Registry action
         uses: actions/checkout@v2
 
-      - name: Build the Docker image
-        run: |
-          docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
+      #- name: Build the Docker image
+        #run: |
+          #docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
           #docker push --all-tags ${{ env.IMAGE_NAME }}
-          
-   # Push the image to GHCR (Image Registry)
-      - name: Push To GHCR
-        uses: ./
-        id: push
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
         with:
-          image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.IMAGE_TAGS }}
-          registry: ${{ env.IMAGE_REGISTRY }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-          extra-args: |
-            --disable-content-trust
-      - name: Echo outputs
-        run: |
-          echo "${{ toJSON(steps.push.outputs) }}"
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
 
   push_to_contensis:
     runs-on: ubuntu-latest
