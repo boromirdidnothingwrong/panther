@@ -9,9 +9,6 @@ on:
 env:
     IMAGE_NAME: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app
     IMAGE_TAGS: build-${{ github.run_number }}
-    IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-    REGISTRY_USER: ${{ github.actor }}
-    REGISTRY_PASSWORD: ${{ github.token }}
 
 jobs:
   build:
@@ -22,11 +19,6 @@ jobs:
       # Checkout push-to-registry action github repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v2
-
-      #- name: Build the Docker image
-        #run: |
-          #docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAGS }}
-          #docker push --all-tags ${{ env.IMAGE_NAME }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
